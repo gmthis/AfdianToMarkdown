@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
@@ -22,7 +22,7 @@ const (
 func GetMotions(cfg *config.Config, authorUrlSlug string, cookieString string, authToken string, disableComment bool, quickUpdate bool) error {
 	authorHost, _ := url.JoinPath(cfg.HostUrl, "a", authorUrlSlug)
 	//创建作者文件夹
-	if err := os.MkdirAll(path.Join(cfg.DataDir, authorUrlSlug, authorDir), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Join(cfg.DataDir, authorUrlSlug, authorDir), os.ModePerm); err != nil {
 		return fmt.Errorf("create author dir error: %v", err)
 	}
 	slog.Info("作者主页", "authorHostUrl", authorHost)
@@ -39,7 +39,7 @@ func GetMotions(cfg *config.Config, authorUrlSlug string, cookieString string, a
 
 		for _, article := range subArticleList {
 			timePrefix := article.PublishTime.Format("2006-01-02_15_04_05")
-			filePath := path.Join(cfg.DataDir, authorUrlSlug, authorDir, timePrefix+"_"+article.Name+".md")
+			filePath := filepath.Join(cfg.DataDir, authorUrlSlug, authorDir, timePrefix+"_"+article.Name+".md")
 			skipped, err := storage.SavePostIfNotExist(cfg, filePath, article, authToken, disableComment, converter)
 			if err != nil {
 				return err

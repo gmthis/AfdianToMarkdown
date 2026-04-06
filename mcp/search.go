@@ -19,10 +19,9 @@ func Search(dataDir, query, author string, maxResults int) (*storage.SearchRespo
 	// 确定搜索范围（作者列表）
 	var authors []string
 	if author != "" {
-		// 验证作者是否存在
-		authorDir := filepath.Join(dataDir, author)
-		info, err := os.Stat(authorDir)
-		if err != nil || !info.IsDir() {
+		// 通过 ListPosts 验证作者是否存在（内含路径遍历检查）
+		_, err := storage.ListPosts(dataDir, author)
+		if err != nil {
 			return nil, fmt.Errorf("作者不存在：%s", author)
 		}
 		authors = []string{author}

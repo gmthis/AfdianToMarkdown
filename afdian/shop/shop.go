@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -29,7 +28,7 @@ func GetShopProducts(cfg *config.Config, authorUrlSlug string, cookieString stri
 	if subDir == "" {
 		subDir = "default"
 	}
-	saveDir := path.Join(cfg.DataDir, authorUrlSlug, shopDir, subDir)
+	saveDir := filepath.Join(cfg.DataDir, authorUrlSlug, shopDir, subDir)
 
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		return fmt.Errorf("create shop dir error: %v", err)
@@ -45,7 +44,7 @@ func GetShopProducts(cfg *config.Config, authorUrlSlug string, cookieString stri
 	for _, product := range products {
 		timePrefix := product.UpdateTime.Format("2006-01-02_15_04_05")
 		fileName := fmt.Sprintf("%s_%s.md", timePrefix, product.Name)
-		filePath := path.Join(saveDir, fileName)
+		filePath := filepath.Join(saveDir, fileName)
 
 		if _, err := os.Stat(filePath); err == nil {
 			if quickUpdate {

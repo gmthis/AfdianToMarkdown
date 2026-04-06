@@ -39,6 +39,22 @@ type SearchResponse struct {
 	Truncated  bool           // 是否因超过上限而截断
 }
 
+// safePath 验证相对路径解析后仍在 dataDir 内，防止路径遍历攻击。
+// 返回规范化后的绝对路径，如果路径逃逸则返回错误。
+func safePath(dataDir, relativePath string) (string, error) {
+	absDataDir, err := filepath.Abs(dataDir)
+	if err != nil {
+		return "", err
+	}
+	fullPath := filepath.Join(absDataDir, relativePath)
+	cleanPath := filepath.Clean(fullPath)
+	// 确保解析后的路径仍在数据目录内（加 separator 防止前缀误匹配，如 /data2 匹配 /data）
+	if !strings.HasPrefix(cleanPath, absDataDir+string(filepath.Separator)) && cleanPath != absDataDir {
+		return "", fmt.Errorf("路径不合法：%s", relativePath)
+	}
+	return cleanPath, nil
+}
+
 // ListAuthors 扫描数据目录，返回所有作者名称列表
 func ListAuthors(dataDir string) ([]string, error) {
 	entries, err := os.ReadDir(dataDir)
@@ -81,7 +97,10 @@ func ParsePostInfo(fileName, category, relativeDir string) PostInfo {
 
 // ListPosts 扫描指定作者目录，返回按动态和作品集分组的文章列表
 func ListPosts(dataDir, author string) (*AuthorPosts, error) {
-	authorDir := filepath.Join(dataDir, author)
+	authorDir, err := safePath(dataDir, author)
+	if err != nil {
+		return nil, fmt.Errorf("作者不存在：%s", author)
+	}
 	info, err := os.Stat(authorDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -140,12 +159,11 @@ func ListPosts(dataDir, author string) (*AuthorPosts, error) {
 // ReadPost 读取指定相对路径的 Markdown 文件，返回完整内容
 func ReadPost(dataDir, relativePath string) (string, error) {
 	// 安全检查：防止路径遍历
-	cleanPath := filepath.Clean(relativePath)
-	if strings.Contains(cleanPath, "..") {
+	fullPath, err := safePath(dataDir, relativePath)
+	if err != nil {
 		return "", fmt.Errorf("文件不存在：%s", relativePath)
 	}
 
-	fullPath := filepath.Join(dataDir, cleanPath)
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
 		if os.IsNotExist(err) {

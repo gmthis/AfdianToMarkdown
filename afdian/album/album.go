@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -50,7 +50,7 @@ func GetAlbum(cfg *config.Config, cookieString string, authToken string, album a
 	}
 	time.Sleep(time.Millisecond * time.Duration(afdian.DelayMs))
 
-	albumSaveDir := path.Join(cfg.DataDir, albumInfo.AuthorUrlSlug, albumInfo.AlbumName)
+	albumSaveDir := filepath.Join(cfg.DataDir, albumInfo.AuthorUrlSlug, albumInfo.AlbumName)
 	if err := os.MkdirAll(albumSaveDir, os.ModePerm); err != nil {
 		return fmt.Errorf("create album dir <%s> error: %v", albumSaveDir, err)
 	}
@@ -65,7 +65,7 @@ func GetAlbum(cfg *config.Config, cookieString string, authToken string, album a
 
 		for _, post := range postList {
 			timePrefix := post.PublishTime.Format("2006-01-02_15_04_05")
-			filePath := path.Join(albumSaveDir, timePrefix+"_"+post.Name+".md")
+			filePath := filepath.Join(albumSaveDir, timePrefix+"_"+post.Name+".md")
 
 			skipped, err := storage.SavePostIfNotExist(cfg, filePath, post, authToken, disableComment, converter)
 			if err != nil {
