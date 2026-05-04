@@ -34,11 +34,11 @@ func SavePostIfNotExist(cfg *config.Config, filePath string, article afdian.Post
 			return false, err
 		}
 
-		audioContent, err := downloadMedia(filePath, article.Name, audio, "audio")
+		audioContent, err := downloadMedia(filePath, article.Name, audio, "audio", cfg.DownloadMedia)
 		if err != nil {
 			return false, err
 		}
-		videoContent, err := downloadMedia(filePath, article.Name, video, "video")
+		videoContent, err := downloadMedia(filePath, article.Name, video, "video", cfg.DownloadMedia)
 		if err != nil {
 			return false, err
 		}
@@ -107,8 +107,8 @@ func getPictures(filePath string, article afdian.Post) (string, error) {
 	return picContent, nil
 }
 
-func downloadMedia(filePath string, articleName string, mediaUrl string, label string) (string, error) {
-	if mediaUrl == "" {
+func downloadMedia(filePath string, articleName string, mediaUrl string, label string, downloadMedia bool) (string, error) {
+	if mediaUrl == "" || !downloadMedia {
 		return "", nil
 	}
 	assetsDir := filepath.Join(filepath.Dir(filePath), utils.ImgDir)
