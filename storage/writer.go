@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand/v2"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -60,7 +61,7 @@ func SavePostIfNotExist(cfg *config.Config, filePath string, article afdian.Post
 			return false, err
 		}
 	} else {
-		log.Printf("File exists: %s", filePath)
+		slog.Info("File exists:", "path", filePath)
 		return true, nil
 	}
 	return false, nil
@@ -85,7 +86,7 @@ func getPictures(filePath string, article afdian.Post) (string, error) {
 		localFileName := fmt.Sprintf("%s_%d%s", utils.ToSafeFilename(article.Name), i, ext)
 		localFilePath := filepath.Join(assetsDir, localFileName)
 
-		log.Printf("Downloading picture in article %s: %s", article.Name, pictureUrl)
+		slog.Info("Downloading picture in:", "article", article.Name, "url", pictureUrl)
 		// 使用requests下载图片
 		err := requests.
 			URL(pictureUrl).
@@ -94,14 +95,14 @@ func getPictures(filePath string, article afdian.Post) (string, error) {
 			Fetch(context.Background())
 
 		if err != nil {
-			log.Printf("Failed to download image %s: %v", pictureUrl, err)
+			slog.Error("Failed to download image:", "url", pictureUrl, "error", err)
 			// 如果下载失败，使用原始URL
 			picContent += fmt.Sprintf("![image](%s)\n", pictureUrl)
 			continue
 		}
 
 		// 使用相对路径引用本地图片
-		relPath := filepath.Join(utils.ImgDir, localFileName)
+		relPath := path.Join(utils.ImgDir, localFileName)
 		picContent += fmt.Sprintf("![image](%s)\n", relPath)
 	}
 	return picContent, nil

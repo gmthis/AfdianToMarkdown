@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -84,7 +85,7 @@ func GetShopProducts(cfg *config.Config, authorUrlSlug string, cookieString stri
 				Fetch(context.Background())
 
 			if err == nil {
-				picContent = fmt.Sprintf("![cover](%s)\n\n", filepath.Join(utils.ImgDir, imgName))
+				picContent = fmt.Sprintf("![cover](%s)\n\n", path.Join(utils.ImgDir, imgName))
 			} else {
 				picContent = fmt.Sprintf("![cover](%s)\n\n", product.Pic)
 			}
